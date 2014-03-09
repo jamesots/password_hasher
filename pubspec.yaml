@@ -1,0 +1,6 @@
+name: password_hasher
+version: 0.1.0
+description: Utility for hashing passwords
+dependencies:
+  unittest: any
+  crypto: any
