@@ -1,5 +1,7 @@
 name: password_hasher
 version: 0.1.0
+author: James Ots <code@jamesots.com>
+homepage: https://github.com/jamesots/password_hasher
 description: Utility for hashing passwords
 dependencies:
   unittest: ">=0.10.0 <0.11.0"
