@@ -13,6 +13,32 @@ List<int> encodeBytes(String bytes) {
 
 main() {
   group("PBKDF2", () {
+//    test("Time", () {
+//      var av = 0;
+//      for (var i = 0; i < 1; i++) {
+//        var sw = new Stopwatch()..start();
+//        var sha = new SHA1();
+//        var hash = new PBKDF2(hash: sha);
+//        hash.generateKey("password", "salt", 10000000, 20);
+//        sw.stop();
+//        av += sw.elapsedMicroseconds;
+//      }
+//      print(av/1);
+      // 20 runs
+      //1 -> 1 450
+      //10 -> 2 600
+      //100 -> 6 500
+      //1000 -> 26 600
+      //10000 -> 222 600
+      //100000 -> 2 291 000
+      
+      // 5 runs
+      //1000000 -> 21 855 136
+      
+      // 1 run
+      //10000000 -> 222 286 362 
+//    });
+    
     test("Should disallow large values of dkLen", () {
       var sha = new SHA1();
       sha.add([1, 2, 3]);

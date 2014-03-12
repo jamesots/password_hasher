@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 
 class PBKDF2 {
   Hash hash;
+  List<int> blockList = new List<int>(4);
 
   PBKDF2({Hash this.hash});
 
@@ -47,12 +48,11 @@ class PBKDF2 {
   }
   
   writeBlockNumber(HMAC hmac, int blockNumber) {
-    var list = [];
-    list.add(blockNumber >> 24);
-    list.add(blockNumber >> 16);
-    list.add(blockNumber >> 8);
-    list.add(blockNumber);
-    hmac.add(list);
+    blockList[0] = blockNumber >> 24;
+    blockList[1] = blockNumber >> 16;
+    blockList[2] = blockNumber >> 8;
+    blockList[3] = blockNumber;
+    hmac.add(blockList);
   }
   
   xorLists(List<int> list1, List<int> list2) {
