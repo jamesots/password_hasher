@@ -4,6 +4,7 @@ import 'package:password_hasher/src/password_hasher_impl.dart';
 import 'package:unittest/unittest.dart';
 import 'package:unittest/mock.dart';
 import 'package:crypto/crypto.dart';
+import 'package:pbkdf2/pbkdf2.dart';
 
 main() {
   group("security", () {
@@ -35,13 +36,12 @@ main() {
     test("should hash password and salt", () {
       var generator = new RandomSaltGenerator();
       var salt = generator.generateSalt(32);
-      var hashedPassword = SecurityHelper.hashPasswordAndSalt(salt, "password", new SHA256());
-      
-      var hasher = new SHA256();
-      hasher.add(salt);
-      hasher.add("password".codeUnits);
-      
-      expect(hashedPassword, hasher.close());
+      var hashedPassword = SecurityHelper.hashPasswordAndSalt(salt, "password", new SHA256(), 1000, 32);
+
+      var gen = new PBKDF2(hash: new SHA256());
+      var key = gen.generateKey("password", new String.fromCharCodes(salt), 1000, 32);
+
+      expect(hashedPassword, key);
     });
 
     test("two salts shouldn't be the same", () {
@@ -89,7 +89,7 @@ main() {
       var hashedPassword = security.hashPassword("password", salt: salt);
       expect(int.parse(hashedPassword.substring(0, 3)), saltB64.length);
       
-      var hashedPasswordAndSalt = SecurityHelper.hashPasswordAndSalt(salt, "password", new SHA256());
+      var hashedPasswordAndSalt = SecurityHelper.hashPasswordAndSalt(salt, "password", new SHA256(), 1000, 32);
       var check = "${CryptoUtils.bytesToBase64(salt)}${CryptoUtils.bytesToBase64(hashedPasswordAndSalt)}";
       
       expect(hashedPassword.substring(3), check);

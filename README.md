@@ -15,12 +15,4 @@ Example:
 	// checked against a password using checkPassword():
 	var passwordOk = hasher.checkPassword(hash, "mypassword");
 
-It also implements the PBKDF2 algorithm:
- 
-	// create a key generator with a particular hash (default is SHA1)
-	var pbkdf2 = new PBKDF2(hash: new SHA256());
-  
-	// generate a key with the given password and salt, using
-	// 1000 iterations of the hash function, and giving a 20 byte key
-	pbkdf2.generateKey("password", "salt", 1000, 20);
-  
+[![Build Status](https://drone.io/github.com/jamesots/password_hasher/status.png)](https://drone.io/github.com/jamesots/password_hasher/latest)

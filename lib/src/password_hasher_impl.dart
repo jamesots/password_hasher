@@ -2,6 +2,7 @@ library password_hasher_impl;
 
 import 'dart:math';
 import 'package:crypto/crypto.dart';
+import 'package:pbkdf2/pbkdf2.dart';
 
 abstract class SaltGenerator {
   /**
@@ -28,15 +29,20 @@ class RandomSaltGenerator implements SaltGenerator {
 class PasswordHasher {
   SaltGenerator saltGenerator;
   Hash hash;
+  int _iterations;
+  int _keyLength;
 
   /**
-   * Creates a new [PasswordHasher], optionally specifying a [saltGenerator]
-   * and a [hash]. If these are not specified they default to using [RandomSaltGenerator]
-   * and [SHA256] respectively.
+   * Creates a new [PasswordHasher], optionally specifying a [saltGenerator],
+   * a [hash], the number of iterations of PBKDF2 function and the generated key length.
+   * If these are not specified they default to using [RandomSaltGenerator],
+   * [SHA256], 1000 and 32 respectively.
    */
-  PasswordHasher({SaltGenerator saltGenerator, Hash hash}) {
+  PasswordHasher({SaltGenerator saltGenerator, Hash hash, int iterations: 1000, int keyLength: 32}) {
     this.saltGenerator = saltGenerator == null ? new RandomSaltGenerator() : saltGenerator;
     this.hash = hash == null ? new SHA256() : hash;
+    this._iterations = iterations;
+    this._keyLength = keyLength;
   }
 
   /**
@@ -47,7 +53,7 @@ class PasswordHasher {
   bool checkPassword(String saltAndPasswordHash, String password) {
     var salt = SecurityHelper.extractSaltFromHash(saltAndPasswordHash);
     var storedPasswordHash = SecurityHelper.extractPasswordHashFromHash(saltAndPasswordHash);
-    var newHash = SecurityHelper.hashPasswordAndSalt(salt, password, hash);
+    var newHash = SecurityHelper.hashPasswordAndSalt(salt, password, hash, _iterations, _keyLength);
 
     var i = -1;
     return newHash.every((element) {
@@ -68,7 +74,8 @@ class PasswordHasher {
     if (salt == null) {
       salt = saltGenerator.generateSalt(32);
     }
-    var hashedPassword = SecurityHelper.hashPasswordAndSalt(salt, password, hash);
+    var hashedPassword = SecurityHelper.hashPasswordAndSalt(salt, password, hash,
+        _iterations, _keyLength);
     return SecurityHelper.joinSaltAndHashedPassword(salt, hashedPassword);
   }
 }
@@ -86,11 +93,10 @@ class SecurityHelper {
     return CryptoUtils.base64StringToBytes(passwordHashB64);
   }
 
-  static List<int> hashPasswordAndSalt(List<int> salt, String password, Hash hash) {
-    var hasher = hash.newInstance();
-    hasher.add(salt);
-    hasher.add(password.codeUnits);
-    return hasher.close();
+  static List<int> hashPasswordAndSalt(List<int> salt, String password, Hash hash,
+      int iterations, int keyLength) {
+    var gen = new PBKDF2(hash: hash);
+    return gen.generateKey(password, new String.fromCharCodes(salt), iterations, keyLength);
   }
 
   static String joinSaltAndHashedPassword(List<int> salt, List<int> password) {
